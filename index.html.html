@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Richiesta di Preventivo – Istituto Scolastico</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a2636; min-height: 100vh; padding: 32px 16px 48px; }
+  .container { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.10); overflow: hidden; }
+  .form-header { background: linear-gradient(135deg, #185FA5 0%, #0C447C 100%); padding: 28px 36px 22px; display: flex; align-items: center; gap: 18px; }
+  .header-icon { width: 52px; height: 52px; background: rgba(255,255,255,0.18); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .form-header h1 { color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .form-header p { color: rgba(255,255,255,0.78); font-size: 13px; }
+  .form-body { padding: 32px 36px 36px; }
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; color: #185FA5; text-transform: uppercase; border-bottom: 1.5px solid #e3eaf3; padding-bottom: 7px; margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
+  .section-title span { font-size: 17px; }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .field-grid.full { grid-template-columns: 1fr; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12.5px; font-weight: 600; color: #3a5068; }
+  .field label .opt { font-size: 10.5px; font-weight: 400; color: #8fa3b8; background: #eef3f8; border-radius: 4px; padding: 1px 6px; margin-left: 5px; vertical-align: 1px; }
+  .field input, .field select, .field textarea { font-size: 13.5px; padding: 9px 11px; border: 1px solid #cdd8e3; border-radius: 7px; background: #fafdff; color: #1a2636; width: 100%; transition: border-color 0.15s, box-shadow 0.15s; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,0.13); background: #fff; }
+  .field input.error, .field select.error, .field textarea.error { border-color: #e24b4a; box-shadow: 0 0 0 3px rgba(226,75,74,0.10); }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .required-note { font-size: 12px; color: #8fa3b8; margin-bottom: 20px; padding: 8px 12px; background: #f4f8fd; border-radius: 7px; border-left: 3px solid #378ADD; }
+  .actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; align-items: center; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: #185FA5; color: #fff; border: none; border-radius: 8px; padding: 11px 22px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .btn-primary:hover { background: #0C447C; }
+  .btn-primary:disabled { background: #8fa3b8; cursor: not-allowed; }
+  .btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: #3a5068; border: 1px solid #cdd8e3; border-radius: 8px; padding: 11px 22px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-secondary:hover { background: #f0f4f8; }
+  .status-msg { display: none; font-size: 13px; padding: 10px 16px; border-radius: 8px; margin-top: 14px; font-weight: 500; line-height: 1.7; }
+  .status-msg.success { display: block; background: #eaf3de; color: #3b6d11; border: 1px solid #97c459; }
+  .status-msg.error   { display: block; background: #fcebeb; color: #a32d2d; border: 1px solid #f09595; }
+  .status-msg.loading { display: block; background: #e6f1fb; color: #185FA5; border: 1px solid #85b7eb; }
+  .divider { height: 1px; background: #e3eaf3; margin: 28px 0 0; }
+  .mt12 { margin-top: 12px; }
+  .drive-links { margin-top: 14px; font-size: 12px; color: #5a7a9a; padding: 8px 12px; background: #f0f6ff; border-radius: 7px; border: 1px solid #c8ddf5; }
+  .drive-links a { color: #185FA5; text-decoration: none; font-weight: 600; }
+  .drive-links a:hover { text-decoration: underline; }
+  @media (max-width: 600px) { .field-grid, .field-grid.three { grid-template-columns: 1fr; } .form-body { padding: 20px 16px 24px; } .form-header { padding: 20px 18px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="form-header">
+    <div class="header-icon">🏫</div>
+    <div>
+      <h1>Richiesta di Preventivo</h1>
+      <p style="color:#fff; font-size:15px; font-weight:600; margin-bottom:3px; letter-spacing:0.01em;">Daniele Boschetto — Consulente per la Didattica</p>
+      <p>Modulo anagrafico per istituti scolastici — compila tutti i campi obbligatori</p>
+    </div>
+  </div>
+
+  <div class="form-body">
+    </div>
+
+    <p class="required-note">
+      I campi senza indicazione sono <strong>obbligatori</strong>.
+      <span style="background:#eef3f8;border-radius:4px;padding:1px 6px;font-size:11px;color:#8fa3b8;font-weight:600;">Opzionale</span> indica i campi facoltativi.
+    </p>
+
+    <!-- SEZIONE 1: DATI ISTITUTO -->
+    <div class="section">
+      <div class="section-title"><span>🏛️</span> Dati anagrafici dell'istituto</div>
+      <div class="field-grid full">
+        <div class="field"><label for="nome_istituto">Denominazione istituto</label><input type="text" id="nome_istituto" placeholder="es. I.C. Giovanni Pascoli" /></div>
+      </div>
+      <div class="field-grid mt12">
+        <div class="field"><label for="codice_meccanografico">Codice meccanografico</label><input type="text" id="codice_meccanografico" placeholder="es. NAIC000000" maxlength="10" style="text-transform:uppercase" /></div>
+        <div class="field"><label for="codice_fiscale">Codice fiscale istituto</label><input type="text" id="codice_fiscale" placeholder="es. 80012345678" maxlength="16" style="text-transform:uppercase" /></div>
+      </div>
+      <div class="field-grid mt12">
+        <div class="field">
+          <label for="tipo_istituto">Tipologia istituto</label>
+          <select id="tipo_istituto">
+            <option value="">— Seleziona tipologia —</option>
+            <option>Istituto Comprensivo</option><option>Scuola dell'Infanzia</option><option>Scuola Primaria</option>
+            <option>Scuola Secondaria di I Grado</option><option>Liceo Classico</option><option>Liceo Scientifico</option>
+            <option>Liceo Linguistico</option><option>Liceo Artistico</option><option>Liceo delle Scienze Umane</option>
+            <option>Istituto Tecnico Economico</option><option>Istituto Tecnico Tecnologico</option>
+            <option>Istituto Professionale</option><option>CPIA</option><option>Altro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="grado_istruzione">Grado di istruzione</label>
+          <select id="grado_istruzione">
+            <option value="">— Seleziona grado —</option>
+            <option>Infanzia (0–6 anni)</option><option>Primaria (6–11 anni)</option>
+            <option>Secondaria di I Grado (11–14 anni)</option><option>Secondaria di II Grado (14–19 anni)</option>
+            <option>Plurigrade (più gradi)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-grid three mt12">
+        <div class="field"><label for="num_alunni">N° alunni <span class="opt">Opzionale</span></label><input type="number" id="num_alunni" placeholder="es. 450" min="1" /></div>
+        <div class="field"><label for="num_classi">N° classi <span class="opt">Opzionale</span></label><input type="number" id="num_classi" placeholder="es. 22" min="1" /></div>
+        <div class="field"><label for="num_docenti">N° docenti <span class="opt">Opzionale</span></label><input type="number" id="num_docenti" placeholder="es. 45" min="1" /></div>
+      </div>
+    </div>
+
+    <!-- SEZIONE 2: LOCALIZZAZIONE -->
+    <div class="section">
+      <div class="section-title"><span>📍</span> Localizzazione territoriale</div>
+      <div class="field-grid full">
+        <div class="field"><label for="indirizzo">Indirizzo sede legale</label><input type="text" id="indirizzo" placeholder="Via/Piazza, numero civico" /></div>
+      </div>
+      <div class="field-grid three mt12">
+        <div class="field"><label for="cap">CAP</label><input type="text" id="cap" placeholder="es. 80100" maxlength="5" /></div>
+        <div class="field"><label for="comune">Comune</label><input type="text" id="comune" placeholder="es. Napoli" /></div>
+        <div class="field"><label for="provincia">Provincia (sigla)</label><input type="text" id="provincia" placeholder="es. NA" maxlength="3" style="text-transform:uppercase" /></div>
+      </div>
+      <div class="field-grid mt12">
+        <div class="field">
+          <label for="regione">Regione</label>
+          <select id="regione">
+            <option value="">— Seleziona regione —</option>
+            <option>Abruzzo</option><option>Basilicata</option><option>Calabria</option><option>Campania</option>
+            <option>Emilia-Romagna</option><option>Friuli-Venezia Giulia</option><option>Lazio</option><option>Liguria</option>
+            <option>Lombardia</option><option>Marche</option><option>Molise</option><option>Piemonte</option>
+            <option>Puglia</option><option>Sardegna</option><option>Sicilia</option><option>Toscana</option>
+            <option>Trentino-Alto Adige</option><option>Umbria</option><option>Valle d'Aosta</option><option>Veneto</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="area_geografica">Area geografica</label>
+          <select id="area_geografica">
+            <option value="">— Seleziona area —</option>
+            <option>Nord-Ovest</option><option>Nord-Est</option><option>Centro</option><option>Sud</option><option>Isole</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-grid mt12">
+        <div class="field"><label for="email_istituto">Email istituzionale</label><input type="email" id="email_istituto" placeholder="es. naic000000@istruzione.it" /></div>
+        <div class="field"><label for="pec_istituto">PEC istituzionale <span class="opt">Opzionale</span></label><input type="email" id="pec_istituto" placeholder="es. naic000000@pec.istruzione.it" /></div>
+      </div>
+      <div class="field-grid mt12">
+        <div class="field"><label for="tel_istituto">Telefono <span class="opt">Opzionale</span></label><input type="tel" id="tel_istituto" placeholder="es. 081 123456" /></div>
+        <div class="field"><label for="sito_web">Sito web <span class="opt">Opzionale</span></label><input type="url" id="sito_web" placeholder="es. https://www.istituto.edu.it" /></div>
+      </div>
+    </div>
+
+    <!-- SEZIONE 3: REFERENTE -->
+    <div class="section">
+      <div class="section-title"><span>👤</span> Dati del referente richiedente <span style="font-size:10.5px;font-weight:400;color:#8fa3b8;text-transform:none;letter-spacing:0;">(tutti facoltativi)</span></div>
+      <div class="field-grid">
+        <div class="field"><label for="ref_nome">Nome <span class="opt">Opzionale</span></label><input type="text" id="ref_nome" placeholder="Nome" /></div>
+        <div class="field"><label for="ref_cognome">Cognome <span class="opt">Opzionale</span></label><input type="text" id="ref_cognome" placeholder="Cognome" /></div>
+      </div>
+      <div class="field-grid mt12">
+        <div class="field">
+          <label for="ref_ruolo">Ruolo / Qualifica <span class="opt">Opzionale</span></label>
+          <select id="ref_ruolo">
+            <option value="">— Seleziona ruolo —</option>
+            <option>Dirigente Scolastico</option><option>DSGA</option><option>Docente funzione strumentale</option>
+            <option>Docente</option><option>Collaboratore amministrativo</option><option>Altro</option>
+          </select>
+        </div>
+        <div class="field"><label for="ref_tel">Telefono diretto <span class="opt">Opzionale</span></label><input type="tel" id="ref_tel" placeholder="es. 333 1234567" /></div>
+      </div>
+      <div class="field-grid full mt12">
+        <div class="field"><label for="ref_email">Email personale <span class="opt">Opzionale</span></label><input type="email" id="ref_email" placeholder="es. mario.rossi@scuola.it" /></div>
+      </div>
+    </div>
+
+    <!-- SEZIONE 4: RICHIESTA -->
+    <div class="section">
+      <div class="section-title"><span>📋</span> Dettagli della richiesta</div>
+      <div class="field-grid">
+        <div class="field">
+          <label for="tipo_servizio">Tipo di servizio richiesto</label>
+          <select id="tipo_servizio">
+            <option value="">— Seleziona servizio —</option>
+            <option>Formazione docenti</option><option>Supporto didattico</option><option>Tecnologie educative</option>
+            <option>Software gestionale</option><option>Consulenza organizzativa</option><option>Progetto PNRR</option><option>Altro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="urgenza">Livello di urgenza</label>
+          <select id="urgenza">
+            <option value="">— Seleziona —</option>
+            <option>Bassa — entro 30 giorni</option><option>Media — entro 15 giorni</option>
+            <option>Alta — entro 7 giorni</option><option>Urgente — entro 48 ore</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-grid mt12">
+        <div class="field">
+          <label for="budget_stimato">Budget stimato <span class="opt">Opzionale</span></label>
+          <select id="budget_stimato">
+            <option value="">— Seleziona fascia —</option>
+            <option>Fino a €1.000</option><option>€1.001 – €5.000</option><option>€5.001 – €15.000</option>
+            <option>€15.001 – €50.000</option><option>Oltre €50.000</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fonte_finanziamento">Fonte di finanziamento <span class="opt">Opzionale</span></label>
+          <select id="fonte_finanziamento">
+            <option value="">— Seleziona —</option>
+            <option>Fondi propri</option><option>PNRR</option><option>PON / FESR</option>
+            <option>Fondi ministeriali</option><option>Contributi famiglie</option><option>Altro</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-grid full mt12">
+        <div class="field"><label for="oggetto_richiesta">Oggetto della richiesta</label><input type="text" id="oggetto_richiesta" placeholder="Sintesi in una riga" /></div>
+      </div>
+      <div class="field-grid full mt12">
+        <div class="field"><label for="descrizione_richiesta">Descrizione dettagliata della richiesta</label>
+          <textarea id="descrizione_richiesta" style="min-height:110px" placeholder="Descrivi nel dettaglio le esigenze, gli obiettivi e qualsiasi informazione utile per la formulazione del preventivo..."></textarea>
+        </div>
+      </div>
+      <div class="field-grid full mt12">
+        <div class="field"><label for="note">Note aggiuntive <span class="opt">Opzionale</span></label>
+          <textarea id="note" style="min-height:60px" placeholder="Ulteriori informazioni o richieste specifiche..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="actions">
+      <button class="btn-primary" id="btn-submit" onclick="handleSubmit()">⬇️ Invia richiesta e scarica PDF</button>
+      <button class="btn-secondary" onclick="resetForm()">🔄 Azzera modulo</button>
+    </div>
+
+    <div id="status-msg" class="status-msg"></div>
+
+    <div class="drive-links">
+      📁 Cartella Drive:
+      <a href="https://drive.google.com/drive/folders/15yd1jSTcU4vcpAOrYNMQBjNq1-zNIrlk" target="_blank">raccolta richieste preventivi</a>
+      &nbsp;|&nbsp;
+      📊 Registro:
+      <a href="https://docs.google.com/spreadsheets/d/1gS4pGXWVemuFRlyHi0hyoQfArwb2fj5QwrZYCeWK4Uc" target="_blank">Registro_Preventivi_Scolastici</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var SHEET_URL  = 'https://docs.google.com/spreadsheets/d/1gS4pGXWVemuFRlyHi0hyoQfArwb2fj5QwrZYCeWK4Uc';
+  var FOLDER_URL = 'https://drive.google.com/drive/folders/15yd1jSTcU4vcpAOrYNMQBjNq1-zNIrlk';
+  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyM5uNFrPiSUwIxccy65YtWIzD1gfoPPyZGyrjiIZzRe3lwMxs-HpHXKs5Beq9KyvLaOw/exec';
+
+  function getVal(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+  function showStatus(msg, type) {
+    var el = document.getElementById('status-msg');
+    el.innerHTML = msg; el.className = 'status-msg ' + type;
+  }
+
+  function clearErrors() { document.querySelectorAll('.error').forEach(function(el){ el.classList.remove('error'); }); }
+
+  function validate() {
+    clearErrors();
+    var required = [
+      ['nome_istituto','Denominazione istituto'],['codice_meccanografico','Codice meccanografico'],
+      ['codice_fiscale','Codice fiscale'],['tipo_istituto','Tipologia istituto'],
+      ['grado_istruzione','Grado di istruzione'],['indirizzo','Indirizzo'],
+      ['cap','CAP'],['comune','Comune'],['provincia','Provincia'],
+      ['regione','Regione'],['area_geografica','Area geografica'],
+      ['email_istituto','Email istituzionale'],['tipo_servizio','Tipo servizio'],
+      ['urgenza','Urgenza'],['oggetto_richiesta','Oggetto'],['descrizione_richiesta','Descrizione']
+    ];
+    for (var i=0; i<required.length; i++) {
+      if (!getVal(required[i][0])) {
+        var el = document.getElementById(required[i][0]);
+        if (el) { el.classList.add('error'); el.scrollIntoView({behavior:'smooth',block:'center'}); }
+        showStatus('⚠️ Campo obbligatorio mancante: <strong>'+required[i][1]+'</strong>', 'error');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function buildData() {
+    return {
+      data_invio: new Date().toLocaleString('it-IT'),
+      nome_istituto: getVal('nome_istituto'),
+      codice_meccanografico: getVal('codice_meccanografico'),
+      codice_fiscale: getVal('codice_fiscale'),
+      tipo_istituto: getVal('tipo_istituto'),
+      grado_istruzione: getVal('grado_istruzione'),
+      num_alunni: getVal('num_alunni'),
+      num_classi: getVal('num_classi'),
+      num_docenti: getVal('num_docenti'),
+      indirizzo: getVal('indirizzo'),
+      cap: getVal('cap'),
+      comune: getVal('comune'),
+      provincia: getVal('provincia'),
+      regione: getVal('regione'),
+      area_geografica: getVal('area_geografica'),
+      email_istituto: getVal('email_istituto'),
+      pec_istituto: getVal('pec_istituto'),
+      tel_istituto: getVal('tel_istituto'),
+      sito_web: getVal('sito_web'),
+      ref_nome: getVal('ref_nome'),
+      ref_cognome: getVal('ref_cognome'),
+      ref_ruolo: getVal('ref_ruolo'),
+      ref_tel: getVal('ref_tel'),
+      ref_email: getVal('ref_email'),
+      tipo_servizio: getVal('tipo_servizio'),
+      urgenza: getVal('urgenza'),
+      budget_stimato: getVal('budget_stimato'),
+      fonte_finanziamento: getVal('fonte_finanziamento'),
+      oggetto_richiesta: getVal('oggetto_richiesta'),
+      descrizione_richiesta: getVal('descrizione_richiesta'),
+      note: getVal('note')
+    };
+  }
+
+  function generatePDF(data, filename) {
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    var margin=20, lineH=6, pageH=297, maxY=pageH-margin, y=margin;
+
+    function checkPage(n){ if(y+(n||10)>maxY){doc.addPage();y=margin;} }
+
+    doc.setFillColor(24,95,165); doc.rect(0,0,210,30,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(15);
+    doc.text('RICHIESTA DI PREVENTIVO', margin, 13);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.text('Daniele Boschetto — Consulente per la Didattica', margin, 20);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text('Modulo anagrafico per istituti scolastici', margin, 26);
+    var oggi = new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
+    doc.text('Data: '+oggi, 210-margin, 26, {align:'right'});
+    y=38; doc.setTextColor(30,30,30);
+
+    function sec(t){ checkPage(14); y+=3; doc.setFillColor(230,241,251); doc.rect(margin,y,170,7.5,'F'); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(12,68,124); doc.text(t.toUpperCase(),margin+3,y+5.2); doc.setTextColor(30,30,30); y+=11; }
+    function row(l,v){ if(!v)return; checkPage(lineH+2); doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(90,110,130); doc.text(l+':',margin,y); doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30); var ls=doc.splitTextToSize(v,120); doc.text(ls,margin+48,y); y+=lineH*ls.length; }
+    function pair(l1,v1,l2,v2){ if(!v1&&!v2)return; checkPage(lineH+2); if(v1){doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(90,110,130);doc.text(l1+':',margin,y);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(30,30,30);doc.text(doc.splitTextToSize(v1,58)[0],margin+38,y);} if(v2){doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(90,110,130);doc.text(l2+':',112,y);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(30,30,30);doc.text(doc.splitTextToSize(v2,58)[0],146,y);} y+=lineH; }
+
+    sec("Dati anagrafici dell'istituto");
+    row('Denominazione',data.nome_istituto); pair('Cod.Meccan.',data.codice_meccanografico,'Cod.Fiscale',data.codice_fiscale);
+    pair('Tipologia',data.tipo_istituto,'Grado',data.grado_istruzione); pair('N°Alunni',data.num_alunni,'N°Classi',data.num_classi); pair('N°Docenti',data.num_docenti,'','');
+    sec('Localizzazione territoriale');
+    row('Indirizzo',data.indirizzo); pair('CAP',data.cap,'Comune',data.comune); pair('Provincia',data.provincia,'Regione',data.regione);
+    row('Area Geografica',data.area_geografica); pair('Email ist.',data.email_istituto,'PEC',data.pec_istituto); pair('Telefono',data.tel_istituto,'Sito web',data.sito_web);
+    if(data.ref_nome||data.ref_cognome||data.ref_ruolo){sec('Referente richiedente'); pair('Nome',data.ref_nome,'Cognome',data.ref_cognome); pair('Ruolo',data.ref_ruolo,'Telefono',data.ref_tel); row('Email',data.ref_email);}
+    sec('Dettagli della richiesta');
+    pair('Tipo servizio',data.tipo_servizio,'Urgenza',data.urgenza); pair('Budget',data.budget_stimato,'Finanziamento',data.fonte_finanziamento); row('Oggetto',data.oggetto_richiesta);
+    y+=2; checkPage(20); doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(90,110,130);doc.text('Descrizione:',margin,y);y+=lineH;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(30,30,30);
+    doc.splitTextToSize(data.descrizione_richiesta,168).forEach(function(l){checkPage(lineH);doc.text(l,margin,y);y+=lineH;});
+    if(data.note){y+=3;checkPage(12);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(90,110,130);doc.text('Note:',margin,y);y+=lineH;doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(30,30,30);doc.splitTextToSize(data.note,168).forEach(function(l){checkPage(lineH);doc.text(l,margin,y);y+=lineH;});}
+
+    var pages=doc.internal.getNumberOfPages();
+    for(var p=1;p<=pages;p++){doc.setPage(p);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(160,160,160);doc.line(margin,pageH-13,210-margin,pageH-13);doc.text('Modulo richiesta preventivo — '+oggi,margin,pageH-9);doc.text('Pag.'+p+' di '+pages,210-margin,pageH-9,{align:'right'});}
+    doc.save(filename);
+  }
+
+  async function sendToSheet(data, filename) {
+    try {
+      var payload = Object.assign({}, data, { nome_file_pdf: filename });
+      var resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      var json = await resp.json();
+      return { ok: json.result === 'ok', row: json.row };
+    } catch(e) {
+      return { ok: false, reason: e.message };
+    }
+  }
+
+  async function handleSubmit() {
+    if (!validate()) return;
+    var btn = document.getElementById('btn-submit');
+    btn.disabled = true; btn.textContent = '⏳ Elaborazione...';
+
+    var data = buildData();
+    var slug = (data.nome_istituto||'istituto').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').toLowerCase();
+    var oggi = new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+    var filename = 'preventivo_'+slug+'_'+oggi+'.pdf';
+
+    showStatus('⏬ Generazione PDF...', 'loading');
+    generatePDF(data, filename);
+
+    showStatus('☁️ Invio dati al registro Google Sheets...', 'loading');
+    var result = await sendToSheet(data, filename);
+
+    if (result.ok) {
+      showStatus(
+        '✅ Tutto completato!<br>' +
+        '&nbsp;&nbsp;• PDF <strong>'+filename+'</strong> scaricato nella cartella Download<br>' +
+        '&nbsp;&nbsp;• Riga aggiunta nel <a href="'+SHEET_URL+'" target="_blank" style="color:#3b6d11">Registro_Preventivi_Scolastici</a> (riga '+result.row+')',
+        'success'
+      );
+    } else if (result.reason === 'no_url') {
+      showStatus(
+        '✅ PDF scaricato.<br>' +
+        '⚠️ <strong>Collegamento al foglio non configurato.</strong> Inserisci l\'URL di Apps Script nel banner in cima alla pagina per abilitare il salvataggio automatico nel registro.',
+        'success'
+      );
+    } else {
+      showStatus(
+        '✅ PDF scaricato.<br>' +
+        '⚠️ Errore invio al foglio: '+result.reason+'. Verifica che l\'Apps Script sia distribuito correttamente.',
+        'success'
+      );
+    }
+
+    btn.disabled = false; btn.textContent = '⬇️ Invia richiesta e scarica PDF';
+  }
+
+  function resetForm() {
+    document.querySelectorAll('input:not(#apps-script-url), select, textarea').forEach(function(el){ el.value=''; });
+    clearErrors();
+    var s=document.getElementById('status-msg'); s.innerHTML=''; s.className='status-msg';
+  }
+</script>
+</body>
+</html>
